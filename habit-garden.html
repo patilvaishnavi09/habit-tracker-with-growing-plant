@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Habit Tracker</title>
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(180deg, #c8f7c5, #f9fff4);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    h1 {
+      margin-top: 30px;
+      color: #2e7d32;
+      text-shadow: 1px 1px #a5d6a7;
+    }
+
+    .tracker-box {
+      background: white;
+      width: 350px;
+      margin-top: 20px;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+      text-align: center;
+      position: relative;
+      z-index: 2;
+    }
+
+    input {
+      width: 70%;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1.5px solid #6abf69;
+      outline: none;
+    }
+
+    button {
+      background: #43a047;
+      border: none;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-left: 5px;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #2e7d32;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin-top: 15px;
+      text-align: left;
+    }
+
+    li {
+      background: #e8f5e9;
+      margin: 6px 0;
+      padding: 8px 10px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    li:hover {
+      background: #dcedc8;
+    }
+
+    li.completed {
+      text-decoration: line-through;
+      color: #666;
+      background: #c8e6c9;
+    }
+
+    .progress-bar {
+      height: 12px;
+      width: 100%;
+      background: #c8e6c9;
+      border-radius: 8px;
+      margin-top: 10px;
+      overflow: hidden;
+    }
+
+    .progress {
+      height: 100%;
+      width: 0%;
+      background: #4caf50;
+      transition: width 0.5s;
+    }
+
+    .plant {
+      position: relative;
+      margin-top: 40px;
+      width: 120px;
+      height: 200px;
+      z-index: 2;
+    }
+
+    .pot {
+      width: 100px;
+      height: 40px;
+      background: #8d6e63;
+      border-radius: 0 0 40px 40px;
+      position: absolute;
+      bottom: 0;
+      left: 10px;
+    }
+
+    .stem {
+      position: absolute;
+      bottom: 40px;
+      left: 55px;
+      width: 10px;
+      height: 0;
+      background: #2e7d32;
+      border-radius: 5px;
+      transition: height 1s ease-in-out;
+    }
+
+    .leaf {
+      width: 28px;
+      height: 18px;
+      background: #66bb6a;
+      border-radius: 50%;
+      position: absolute;
+      opacity: 0;
+      transition: opacity 1s ease-in-out;
+    }
+
+    .leaf.left {
+      left: 25px;
+      bottom: 120px;
+      transform: rotate(-30deg);
+    }
+
+    .leaf.right {
+      right: 25px;
+      bottom: 120px;
+      transform: rotate(30deg);
+    }
+
+    .flower {
+      width: 20px;
+      height: 20px;
+      background: #ff6fa1;
+      border-radius: 50%;
+      position: absolute;
+      top: 60px;
+      left: 50px;
+      opacity: 0;
+      transition: opacity 1s;
+      box-shadow: 0 0 10px #ffb6c1;
+    }
+
+    .stats {
+      margin-top: 10px;
+      font-weight: 600;
+      color: #256d3a;
+    }
+
+    .quote {
+      margin-top: 12px;
+      color: #388e3c;
+      font-style: italic;
+      font-size: 14px;
+    }
+
+    .reset-btn {
+      margin-top: 15px;
+      background: #ef5350;
+    }
+
+    .background-sun {
+      position: absolute;
+      top: -50px;
+      right: -50px;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #ffeb3b, #fbc02d);
+      z-index: 0;
+      animation: sunGlow 5s infinite alternate;
+    }
+
+    @keyframes sunGlow {
+      from { opacity: 0.8; }
+      to { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="background-sun"></div>
+  <h1> Habit Tracker🌼</h1>
+
+  <div class="tracker-box">
+    <input type="text" id="habitInput" placeholder="Add your habit..." />
+    <button id="addBtn">Add</button>
+
+    <ul id="habitList"></ul>
+    <div class="progress-bar"><div class="progress" id="progress"></div></div>
+    <div class="stats" id="statsText">Streak: 0 days</div>
+    <div class="quote" id="quote">"Small steps every day create big change."</div>
+    <button class="reset-btn" id="resetBtn">Reset All</button>
+  </div>
+
+  <div class="plant">
+    <div class="pot"></div>
+    <div class="stem" id="stem"></div>
+    <div class="leaf left" id="leafLeft"></div>
+    <div class="leaf right" id="leafRight"></div>
+    <div class="flower" id="flower"></div>
+  </div>
+
+  <script>
+    const habitInput = document.getElementById("habitInput");
+    const addBtn = document.getElementById("addBtn");
+    const habitList = document.getElementById("habitList");
+    const stem = document.getElementById("stem");
+    const leafLeft = document.getElementById("leafLeft");
+    const leafRight = document.getElementById("leafRight");
+    const flower = document.getElementById("flower");
+    const progress = document.getElementById("progress");
+    const statsText = document.getElementById("statsText");
+    const quote = document.getElementById("quote");
+    const resetBtn = document.getElementById("resetBtn");
+
+    const quotes = [
+      "Every day is a new beginning 🌞",
+      "Small progress is still progress 🌱",
+      "Discipline beats motivation 💪",
+      "Good habits grow beautiful results 🌻",
+      "Stay consistent, not perfect ✨"
+    ];
+
+    let habits = JSON.parse(localStorage.getItem("habits")) || [];
+    let streak = Number(localStorage.getItem("streak")) || 0;
+
+    function showHabits() {
+      habitList.innerHTML = "";
+      habits.forEach((habit, i) => {
+        const li = document.createElement("li");
+        li.textContent = habit.name;
+        if (habit.completed) li.classList.add("completed");
+
+        li.addEventListener("click", () => toggleHabit(i));
+        habitList.appendChild(li);
+      });
+      growPlant();
+      updateProgress();
+    }
+
+    addBtn.addEventListener("click", () => {
+      const name = habitInput.value.trim();
+      if (name === "") return alert("Please enter a habit!");
+      habits.push({ name, completed: false });
+      habitInput.value = "";
+      saveHabits();
+    });
+
+    resetBtn.addEventListener("click", () => {
+      if (confirm("Are you sure you want to reset your garden?")) {
+        habits = [];
+        streak = 0;
+        saveHabits();
+        localStorage.setItem("streak", streak);
+      }
+    });
+
+    function toggleHabit(index) {
+      habits[index].completed = !habits[index].completed;
+      saveHabits();
+
+      if (habits.every(h => h.completed)) {
+        streak++;
+        localStorage.setItem("streak", streak);
+        showMotivation();
+      }
+    }
+
+    function saveHabits() {
+      localStorage.setItem("habits", JSON.stringify(habits));
+      showHabits();
+    }
+
+    function growPlant() {
+      const completed = habits.filter(h => h.completed).length;
+      const total = habits.length;
+
+      stem.style.height = `${completed * 30}px`;
+      leafLeft.style.opacity = completed >= 2 ? 1 : 0;
+      leafRight.style.opacity = completed >= 3 ? 1 : 0;
+      flower.style.opacity = completed === total && total > 0 ? 1 : 0;
+    }
+
+    function updateProgress() {
+      const total = habits.length;
+      const completed = habits.filter(h => h.completed).length;
+      const percent = total ? (completed / total) * 100 : 0;
+      progress.style.width = percent + "%";
+      statsText.textContent = `Streak: ${streak} day${streak !== 1 ? "s" : ""}`;
+    }
+
+    function showMotivation() {
+      const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+      quote.textContent = randomQuote;
+    }
+
+    showHabits();
+  </script>
+</body>
+</html>
